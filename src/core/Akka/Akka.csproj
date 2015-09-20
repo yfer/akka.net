@@ -63,6 +63,10 @@
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Xml" />
+    <Reference Include="Wire, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Wire.0.0.4\lib\Wire.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\SharedAssemblyInfo.cs">
@@ -85,10 +89,12 @@
     <Compile Include="Actor\Cancellation\Cancelable.cs" />
     <Compile Include="Actor\Dsl\Act.cs" />
     <Compile Include="Actor\Cancellation\ICancellable.cs" />
+    <Compile Include="Actor\IDynamicAccess.cs" />
     <Compile Include="Actor\Inbox.Actor.cs" />
     <Compile Include="Actor\Internal\InternalCurrentActorCellKeeper.cs" />
     <Compile Include="Actor\Internal\InternalSupportsTestFSMRef.cs" />
     <Compile Include="Actor\Internal\InitializableActor.cs" />
+    <Compile Include="Actor\ReflectiveDynamicAccess.cs" />
     <Compile Include="Actor\Scheduler\DateTimeNowTimeProvider.cs" />
     <Compile Include="Actor\Scheduler\DedicatedThreadScheduler.cs" />
     <Compile Include="Actor\Scheduler\IDateTimeNowTimeProvider.cs" />
@@ -266,6 +272,8 @@
     <Compile Include="IO\TcpListener.cs" />
     <Compile Include="IO\TcpManager.cs" />
     <Compile Include="IO\TcpOutgoingConnection.cs" />
+    <Compile Include="Serialization\SerializerWithStringManifest.cs" />
+    <Compile Include="Serialization\WireSerializer.cs" />
     <Compile Include="Util\ByteIterator.cs" />
     <Compile Include="Util\ByteString.cs" />
     <Compile Include="Util\ContinuousEnumerator.cs" />
