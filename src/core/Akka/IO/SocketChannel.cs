@@ -6,8 +6,10 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using Akka.Actor;
 
 namespace Akka.IO
@@ -16,7 +18,6 @@ namespace Akka.IO
      * SocketChannel does not exists in the .NET BCL - This class is an adapter to hide the differences in CLR & JVM IO.
      * This implementation uses blocking IO calls, and then catch SocketExceptions if the socket is set to non blocking. 
      * This might introduce performance issues, with lots of thrown exceptions
-     * TODO: Implements this class with .NET Async calls
      */
     public class SocketChannel 
     {
@@ -24,7 +25,7 @@ namespace Akka.IO
         private IActorRef _connection;
         private bool _connected;
         private IAsyncResult _connectResult;
-            
+
         public SocketChannel(Socket socket) 
         {
             _socket = socket;
@@ -59,6 +60,33 @@ namespace Akka.IO
 
         public bool Connect(EndPoint address)
         {
+#if CORECLR
+            AsyncCallback endAction = ar => { };
+            var beginConnectMethod = _socket
+                .GetType()
+                .GetTypeInfo()
+                .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
+                .Where(method => method.Name.Equals("BeginConnect"))
+                .FirstOrDefault(method =>
+                {
+                    var parameters = method.GetParameters();
+                    return parameters.Length == 3 && parameters[0].ParameterType == typeof(EndPoint) &&
+                           parameters[1].ParameterType == typeof(AsyncCallback) && parameters[2].ParameterType == typeof(object);
+                });
+
+            _connectResult = (IAsyncResult)beginConnectMethod.Invoke(_socket, new object[] { address, endAction, null });
+            if (_connectResult.CompletedSynchronously)
+            {
+                _socket
+                    .GetType()
+                    .GetTypeInfo()
+                    .GetMethod("EndConnect", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .Invoke(_socket, new object[] { _connectResult });
+                _connected = true;
+                return true;
+            }
+            return false;
+#else
             _connectResult = _socket.BeginConnect(address, ar => { }, null);
             if (_connectResult.CompletedSynchronously)
             {
@@ -67,9 +95,25 @@ namespace Akka.IO
                 return true;
             }
             return false;
+#endif
         }
+
         public bool FinishConnect()
         {
+#if CORECLR
+            if (_connectResult.CompletedSynchronously)
+                return true;
+            if (_connectResult.IsCompleted)
+            {
+                _socket
+                    .GetType()
+                    .GetTypeInfo()
+                    .GetMethod("EndConnect", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .Invoke(_socket, new object[] { _connectResult });
+                _connected = true;
+            }
+            return _connected;
+#else
             if (_connectResult.CompletedSynchronously)
                 return true;
             if (_connectResult.IsCompleted)
@@ -77,7 +121,9 @@ namespace Akka.IO
                 _socket.EndConnect(_connectResult);
                 _connected = true;
             }
+
             return _connected;
+#endif
         }
 
         public SocketChannel Accept()
@@ -112,7 +158,7 @@ namespace Akka.IO
         public void Close()
         {
             _connected = false;
-            _socket.Close();
+            _socket.Dispose();
         }
         internal IActorRef Connection { get { return _connection; } }
     }

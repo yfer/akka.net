@@ -521,7 +521,7 @@ namespace Akka.Tests.IO
         {
             new UnacceptedConnectionTest(this).Run(x =>
             {
-                x.LocalServerChannel.Socket.BeginAccept(ar => x.LocalServerChannel.Socket.EndAccept(ar), null);
+                x.LocalServerChannel.Socket.AcceptAsync(new SocketAsyncEventArgs());
 
                 x.Selector.Send(x.ConnectionActor, SelectionHandler.ChannelConnectable.Instance);
                 x.UserHandler.ExpectMsg<Tcp.Connected>();
@@ -867,7 +867,12 @@ namespace Akka.Tests.IO
             var task = promise.Task;
 
             localServer.Socket.Listen(100);
-            localServer.Socket.BeginAccept(ar => promise.SetResult(localServer.Socket.EndAccept(ar)), null);
+            var socketAsyncEventArgs = new SocketAsyncEventArgs();
+            socketAsyncEventArgs.Completed += (sender, args) =>
+            {
+                promise.SetResult(args.ConnectSocket);
+            };
+            localServer.Socket.AcceptAsync(socketAsyncEventArgs);
 
             Selector.Send(ConnectionActor, SelectionHandler.ChannelConnectable.Instance);
 
@@ -877,7 +882,6 @@ namespace Akka.Tests.IO
             channel.Register(ChannelProbe, SocketAsyncOperation.None);
             return channel;
         }
-
     }
 
     class EstablishedConnectionTest : UnacceptedConnectionTest

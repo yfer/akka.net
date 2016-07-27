@@ -87,6 +87,20 @@ namespace Akka.Streams.TestKit.Tests
 
             public override Encoding Encoding => Encoding.UTF8;
 
+            public override void Write(char value)
+            {
+                try
+                {
+                    _helper.WriteLine(value + "\b");
+                }
+                finally
+                {
+#if !CORECLR
+                    base.Write(value);
+#endif
+                }
+            }
+
             public override void Write(string value)
             {
                 try

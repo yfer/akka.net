@@ -15,6 +15,7 @@ using Akka.Util.Reflection;
 using Akka.Routing;
 using Akka.Util;
 using Newtonsoft.Json;
+using System.Reflection;
 
 namespace Akka.Actor
 {
@@ -674,10 +675,10 @@ namespace Akka.Actor
             if (type == null) {
                 return defaultProducer;
             }
-            if (typeof(IIndirectActorProducer).IsAssignableFrom(type)) {
+            if (typeof(IIndirectActorProducer).GetTypeInfo().IsAssignableFrom(type)) {
                 return Activator.CreateInstance(type, args).AsInstanceOf<IIndirectActorProducer>();
             }
-            if (typeof(ActorBase).IsAssignableFrom(type)) {
+            if (typeof(ActorBase).GetTypeInfo().IsAssignableFrom(type)) {
                 return new ActivatorProducer(type, args);
             }
             throw new ArgumentException(string.Format("Unknown actor producer [{0}]", type.FullName));
@@ -763,7 +764,12 @@ namespace Akka.Actor
         protected override Props Copy()
         {
             Props initialCopy = base.Copy();
+#if CLONEABLE
             var invokerCopy = (Func<TActor>)invoker.Clone();
+#else
+            // TODO: CORECLR FIX IT
+            var invokerCopy = (Func<TActor>)invoker;
+#endif
             return new DynamicProps<TActor>(initialCopy, invokerCopy);
         }
 

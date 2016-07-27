@@ -18,10 +18,12 @@ namespace Akka.Tools.MatchHandler
             return expression.Compile();
         }
 
+#if !CORECLR
         public void CompileToMethod(LambdaExpression expression, MethodBuilder method)
         {
             expression.CompileToMethod(method);
         }
+#endif
     }
 }
 

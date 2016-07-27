@@ -1,0 +1,61 @@
+﻿{
+  "version": "1.2.0-*",
+  "title": "Akka",
+  "description": "Akka.NET is a port of the popular Java/Scala framework Akka to .NET",
+  "authors": [ "Akka.NET Team" ],
+  "copyright": "Copyright © 2013-2016 Akka.NET Team",
+
+  "packOptions": {
+    "licenseUrl": "https://github.com/akkadotnet/akka.net/blob/master/LICENSE",
+    "projectUrl": "https://github.com/akkadotnet/akka.net",
+    "iconUrl": "http://getakka.net/images/AkkaNetLogo.Normal.png",
+    "owners": [ "Akka.NET Team" ],
+    "requireLicenseAcceptance": false,
+    "tags": [ "akka", "actors", "actor model", "Akka", "concurrency" ],
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/akkadotnet/akka.net"
+    }
+  },
+
+  "dependencies": {
+    "Newtonsoft.Json": "9.0.1",
+    "System.Collections.Immutable": "1.2.0"
+  },
+
+  "buildOptions": {
+    "embed": {
+      "includeFiles": [ "Configuration/Pigeon.conf" ]
+    }
+  },
+
+  "frameworks": {
+    "net45": {
+      "buildOptions": {
+        "define": [ "SERIALIZATION", "CONFIGURATION", "UNSAFE_THREADING", "CLONEABLE" ]
+      },
+      "frameworkAssemblies": {
+        "System.Configuration": "4.0.0",
+        "System.Xml": "4.0.0"
+      }
+    },
+    "netstandard1.6": {
+      "buildOptions": {
+        "define": [ "CORECLR" ]
+      },
+      "dependencies": {
+        "System.Console": "4.0.0",
+        "System.Collections.Concurrent": "4.0.12",
+        "System.Diagnostics.TraceSource": "4.0.0",
+        "System.Net.NameResolution": "4.0.0",
+        "System.Net.Sockets": "4.1.0",
+        "System.Reflection": "4.1.0",
+        "System.Reflection.Emit": "4.0.1",
+        "System.Runtime.InteropServices": "4.1.0",
+        "System.Threading.Thread": "4.0.0",
+        "System.Threading.ThreadPool": "4.0.10",
+        "System.Threading.Tasks": "4.0.11"
+      }
+    }
+  }
+}
